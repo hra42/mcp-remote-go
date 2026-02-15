@@ -137,4 +137,4 @@ make build
 
 ## License
 
-MIT
+[Unlicense](LICENSE) — public domain. MCP tooling should be shared infrastructure, not something anyone owns.
