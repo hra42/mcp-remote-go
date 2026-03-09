@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"mcp-remote-go/internal/transport"
+	"github.com/hra42/mcp-remote-go/internal/transport"
 )
 
 func TestProxyRoundTrip(t *testing.T) {

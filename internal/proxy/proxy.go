@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"mcp-remote-go/internal/transport"
+	"github.com/hra42/mcp-remote-go/internal/transport"
 )
 
 // Proxy bridges stdio JSON-RPC to a remote MCP server via HTTP.

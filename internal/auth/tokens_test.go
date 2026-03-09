@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"mcp-remote-go/internal/storage"
+	"github.com/hra42/mcp-remote-go/internal/storage"
 )
 
 func TestExchangeCodeForTokens_Success(t *testing.T) {

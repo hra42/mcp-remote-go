@@ -11,14 +11,15 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 
-	"mcp-remote-go/internal/auth"
-	"mcp-remote-go/internal/proxy"
-	"mcp-remote-go/internal/storage"
-	"mcp-remote-go/internal/transport"
-	"mcp-remote-go/internal/version"
+	"github.com/hra42/mcp-remote-go/internal/auth"
+	"github.com/hra42/mcp-remote-go/internal/proxy"
+	"github.com/hra42/mcp-remote-go/internal/storage"
+	"github.com/hra42/mcp-remote-go/internal/transport"
+	"github.com/hra42/mcp-remote-go/internal/version"
 )
 
 func main() {

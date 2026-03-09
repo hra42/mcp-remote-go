@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"mcp-remote-go/internal/storage"
+	"github.com/hra42/mcp-remote-go/internal/storage"
 )
 
 func TestAuthRoundTripper_InjectsBearer(t *testing.T) {

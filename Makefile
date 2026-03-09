@@ -1,5 +1,5 @@
 VERSION ?= $(shell git describe --tags --always --dirty)
-LDFLAGS = -s -w -X 'mcp-remote-go/internal/version.Version=$(VERSION)'
+LDFLAGS = -s -w -X 'github.com/hra42/mcp-remote-go/internal/version.Version=$(VERSION)'
 BINARY = mcp-remote-go
 
 .PHONY: build build-arm64 build-amd64 build-universal build-linux test clean

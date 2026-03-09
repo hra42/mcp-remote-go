@@ -1,3 +1,3 @@
-module mcp-remote-go
+module github.com/hra42/mcp-remote-go
 
-go 1.25
+go 1.26
