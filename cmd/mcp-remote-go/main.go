@@ -11,14 +11,15 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 
-	"mcp-remote-go/internal/auth"
-	"mcp-remote-go/internal/proxy"
-	"mcp-remote-go/internal/storage"
-	"mcp-remote-go/internal/transport"
-	"mcp-remote-go/internal/version"
+	"github.com/hra42/mcp-remote-go/internal/auth"
+	"github.com/hra42/mcp-remote-go/internal/proxy"
+	"github.com/hra42/mcp-remote-go/internal/storage"
+	"github.com/hra42/mcp-remote-go/internal/transport"
+	"github.com/hra42/mcp-remote-go/internal/version"
 )
 
 func main() {
@@ -181,10 +182,14 @@ func runAuthFlow(ctx context.Context, serverURL string, headerMap map[string]str
 		return nil, fmt.Errorf("load cached tokens: %w", err)
 	}
 
-	if tokens != nil && !tokens.IsExpired() {
-		// Have valid cached tokens.
+	if tokens != nil && (!tokens.IsExpired() || tokens.RefreshToken != "") {
+		// Have cached tokens — either still valid or refreshable.
 		if debug {
-			proxy.Debugf("using cached tokens for %s", hash)
+			if tokens.IsExpired() {
+				proxy.Debugf("access token expired, will refresh for %s", hash)
+			} else {
+				proxy.Debugf("using cached tokens for %s", hash)
+			}
 		}
 
 		meta, err := auth.DiscoverOAuthMetadata(ctx, http.DefaultClient, serverURL)
@@ -193,23 +198,25 @@ func runAuthFlow(ctx context.Context, serverURL string, headerMap map[string]str
 		}
 		if meta != nil {
 			clientInfo, err := storage.LoadClientInfo(hash)
-			if err != nil {
+			if err != nil && !errors.Is(err, storage.ErrNotFound) {
 				return nil, fmt.Errorf("load client info: %w", err)
 			}
-
-			tm := auth.NewTokenManager(tokens, hash, meta.TokenEndpoint, clientInfo.ClientID, http.DefaultClient)
-			rt := auth.NewAuthRoundTripper(http.DefaultTransport, tm)
-			return &authResult{
-				httpClient: &http.Client{Transport: rt},
-				hash:       hash,
-			}, nil
+			if clientInfo != nil {
+				tm := auth.NewTokenManager(tokens, hash, meta.TokenEndpoint, clientInfo.ClientID, http.DefaultClient)
+				rt := auth.NewAuthRoundTripper(http.DefaultTransport, tm)
+				return &authResult{
+					httpClient: &http.Client{Transport: rt},
+					hash:       hash,
+				}, nil
+			}
+			// No client info cached — fall through to full auth flow.
+		} else {
+			// No auth required — use default client.
+			return &authResult{httpClient: nil, hash: hash}, nil
 		}
-
-		// No auth required — use default client.
-		return &authResult{httpClient: nil, hash: hash}, nil
 	}
 
-	// No valid tokens — run full auth flow.
+	// No usable tokens — run full auth flow.
 	meta, err := auth.DiscoverOAuthMetadata(ctx, http.DefaultClient, serverURL)
 	if err != nil {
 		return nil, fmt.Errorf("discover OAuth metadata: %w", err)
@@ -223,13 +230,27 @@ func runAuthFlow(ctx context.Context, serverURL string, headerMap map[string]str
 	// Server requires auth.
 	state := generateState()
 
-	port, resultCh, shutdown, err := auth.StartCallbackServer(ctx, host, state)
+	// Try to reuse the port from a previous client registration so the
+	// redirect_uri matches what was registered during DCR. Servers like
+	// Atlassian validate redirect_uri and return 500 on mismatch.
+	preferredPort := cachedClientPort(hash, host)
+
+	port, resultCh, shutdown, err := auth.StartCallbackServer(ctx, host, state, preferredPort)
 	if err != nil {
 		return nil, fmt.Errorf("start callback server: %w", err)
 	}
 	defer shutdown()
 
 	redirectURI := fmt.Sprintf("http://%s:%d/callback", host, port)
+
+	// If we couldn't bind the preferred port, the cached client info has a
+	// stale redirect_uri — delete it so RegisterClient re-registers.
+	if preferredPort > 0 && port != preferredPort {
+		if debug {
+			proxy.Debugf("preferred port %d unavailable (got %d), forcing re-registration", preferredPort, port)
+		}
+		_ = storage.DeleteClientInfo(hash)
+	}
 
 	clientInfo, err := auth.RegisterClient(ctx, http.DefaultClient, meta, hash, redirectURI)
 	if err != nil {
@@ -286,6 +307,27 @@ func generateState() string {
 	buf := make([]byte, 16)
 	rand.Read(buf)
 	return base64.RawURLEncoding.EncodeToString(buf)
+}
+
+// cachedClientPort extracts the callback port from a previously registered
+// client's redirect_uris. Returns 0 if no cached client or no matching URI.
+func cachedClientPort(hash, host string) int {
+	info, err := storage.LoadClientInfo(hash)
+	if err != nil || info == nil {
+		return 0
+	}
+	for _, uri := range info.RedirectURIs {
+		u, err := url.Parse(uri)
+		if err != nil {
+			continue
+		}
+		if u.Hostname() == host || u.Hostname() == "localhost" || u.Hostname() == "127.0.0.1" {
+			if p, err := strconv.Atoi(u.Port()); err == nil && p > 0 {
+				return p
+			}
+		}
+	}
+	return 0
 }
 
 // buildAuthURL constructs the authorization URL with PKCE parameters.

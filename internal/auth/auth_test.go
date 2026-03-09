@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"testing"
 
-	"mcp-remote-go/internal/storage"
+	"github.com/hra42/mcp-remote-go/internal/storage"
 )
 
 // =============================================================================

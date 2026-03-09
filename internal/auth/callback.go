@@ -15,13 +15,27 @@ type CallbackResult struct {
 	Error string
 }
 
-// StartCallbackServer starts a localhost HTTP server on an ephemeral port
-// that handles the OAuth callback. It returns the port, a channel that
-// receives the callback result, and a shutdown function.
-func StartCallbackServer(ctx context.Context, host, expectedState string) (port int, result <-chan CallbackResult, shutdown func(), err error) {
-	ln, err := net.Listen("tcp", host+":0")
-	if err != nil {
-		return 0, nil, nil, fmt.Errorf("auth: listen on %s: %w", host, err)
+// StartCallbackServer starts a localhost HTTP server that handles the OAuth
+// callback. If preferredPort > 0, it tries that port first (to reuse a port
+// from a previous dynamic client registration). If the preferred port is
+// unavailable it falls back to an ephemeral port. It returns the port, a
+// channel that receives the callback result, and a shutdown function.
+func StartCallbackServer(ctx context.Context, host, expectedState string, preferredPort int) (port int, result <-chan CallbackResult, shutdown func(), err error) {
+	var ln net.Listener
+
+	if preferredPort > 0 {
+		ln, err = net.Listen("tcp", fmt.Sprintf("%s:%d", host, preferredPort))
+		if err != nil {
+			// Preferred port unavailable — fall back to ephemeral.
+			ln = nil
+		}
+	}
+
+	if ln == nil {
+		ln, err = net.Listen("tcp", host+":0")
+		if err != nil {
+			return 0, nil, nil, fmt.Errorf("auth: listen on %s: %w", host, err)
+		}
 	}
 
 	port = ln.Addr().(*net.TCPAddr).Port

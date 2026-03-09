@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
-	"mcp-remote-go/internal/storage"
+	"github.com/hra42/mcp-remote-go/internal/storage"
 )
 
 // tokenResponse is the raw JSON response from the token endpoint.

@@ -9,8 +9,8 @@ import (
 	"io"
 	"net/http"
 
-	"mcp-remote-go/internal/storage"
-	"mcp-remote-go/internal/version"
+	"github.com/hra42/mcp-remote-go/internal/storage"
+	"github.com/hra42/mcp-remote-go/internal/version"
 )
 
 // ErrNoRegistrationEndpoint is returned when the server does not advertise

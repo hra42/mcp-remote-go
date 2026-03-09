@@ -26,7 +26,7 @@ go test -v -race ./internal/storage/...
 go test -v -race -run TestHashCompatibility ./internal/storage/...
 ```
 
-Version is injected via ldflags: `-X 'mcp-remote-go/internal/version.Version=$(VERSION)'`. VERSION defaults to `git describe --tags --always --dirty`.
+Version is injected via ldflags: `-X 'github.com/hra42/mcp-remote-go/internal/version.Version=$(VERSION)'`. VERSION defaults to `git describe --tags --always --dirty`.
 
 ## Architecture
 

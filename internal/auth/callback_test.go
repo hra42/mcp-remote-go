@@ -13,7 +13,7 @@ func TestStartCallbackServer_Success(t *testing.T) {
 	defer cancel()
 
 	state := "test-state-123"
-	port, resultCh, shutdown, err := StartCallbackServer(ctx, "127.0.0.1", state)
+	port, resultCh, shutdown, err := StartCallbackServer(ctx, "127.0.0.1", state, 0)
 	if err != nil {
 		t.Fatalf("StartCallbackServer() error: %v", err)
 	}
@@ -55,7 +55,7 @@ func TestStartCallbackServer_StateMismatch(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	port, resultCh, shutdown, err := StartCallbackServer(ctx, "127.0.0.1", "expected-state")
+	port, resultCh, shutdown, err := StartCallbackServer(ctx, "127.0.0.1", "expected-state", 0)
 	if err != nil {
 		t.Fatalf("StartCallbackServer() error: %v", err)
 	}
@@ -86,7 +86,7 @@ func TestStartCallbackServer_OAuthError(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	port, resultCh, shutdown, err := StartCallbackServer(ctx, "127.0.0.1", "some-state")
+	port, resultCh, shutdown, err := StartCallbackServer(ctx, "127.0.0.1", "some-state", 0)
 	if err != nil {
 		t.Fatalf("StartCallbackServer() error: %v", err)
 	}
@@ -112,7 +112,7 @@ func TestStartCallbackServer_OAuthError(t *testing.T) {
 func TestStartCallbackServer_ContextCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	port, _, shutdown, err := StartCallbackServer(ctx, "127.0.0.1", "state")
+	port, _, shutdown, err := StartCallbackServer(ctx, "127.0.0.1", "state", 0)
 	if err != nil {
 		t.Fatalf("StartCallbackServer() error: %v", err)
 	}

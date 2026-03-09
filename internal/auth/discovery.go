@@ -16,15 +16,15 @@ var ErrNoAuthServer = errors.New("auth: no OAuth authorization server found")
 
 // ServerMetadata holds OAuth 2.0 Authorization Server Metadata (RFC 8414).
 type ServerMetadata struct {
-	Issuer                           string   `json:"issuer"`
-	AuthorizationEndpoint            string   `json:"authorization_endpoint"`
-	TokenEndpoint                    string   `json:"token_endpoint"`
-	RegistrationEndpoint             string   `json:"registration_endpoint,omitempty"`
-	ScopesSupported                  []string `json:"scopes_supported,omitempty"`
-	ResponseTypesSupported           []string `json:"response_types_supported,omitempty"`
-	GrantTypesSupported              []string `json:"grant_types_supported,omitempty"`
-	CodeChallengeMethodsSupported    []string `json:"code_challenge_methods_supported,omitempty"`
-	RevocationEndpoint               string   `json:"revocation_endpoint,omitempty"`
+	Issuer                        string   `json:"issuer"`
+	AuthorizationEndpoint         string   `json:"authorization_endpoint"`
+	TokenEndpoint                 string   `json:"token_endpoint"`
+	RegistrationEndpoint          string   `json:"registration_endpoint,omitempty"`
+	ScopesSupported               []string `json:"scopes_supported,omitempty"`
+	ResponseTypesSupported        []string `json:"response_types_supported,omitempty"`
+	GrantTypesSupported           []string `json:"grant_types_supported,omitempty"`
+	CodeChallengeMethodsSupported []string `json:"code_challenge_methods_supported,omitempty"`
+	RevocationEndpoint            string   `json:"revocation_endpoint,omitempty"`
 }
 
 // ResourceMetadata holds OAuth Protected Resource Metadata (RFC 9728).

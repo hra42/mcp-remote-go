@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"mcp-remote-go/internal/storage"
+	"github.com/hra42/mcp-remote-go/internal/storage"
 )
 
 // GeneratePKCE generates a PKCE code verifier and challenge (S256).
